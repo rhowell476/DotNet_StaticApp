@@ -1,0 +1,72 @@
+﻿@page "/movies"
+@inject HttpClient http
+@inject NavigationManager navigation
+
+<div class="content-container">
+    <ListHeader Title="My List"
+                HandleAdd="@AddNewMovie"
+                HandleRefresh="@HandleRefresh"
+                RoutePath="/movies" />
+    <div class="columns is-multiline is-variable">
+        <div class="column is-8">
+            <MovieList ErrorMessage="@errorMessage"
+                         movies="@movies"
+                         SelectMovie="@SelectMovie"
+                         DeleteMovie="@DeleteMovie" />
+        </div>
+    </div>
+
+    <ModalYesNo Message="@modalMessage"
+                OnNo="@CloseModal"
+                OnYes="@DeleteFromModal"
+                Show="@showModal"/>
+</div>
+
+@code {
+    private string errorMessage = "";
+    private IEnumerable<Movie> movies;
+    private Movie movieToDelete;
+    private bool showModal;
+    private string modalMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        movies = await http.GetFromJsonAsync<IEnumerable<Movie>>("api/movies");
+    }
+
+    private void AddNewMovie()
+    {
+        navigation.NavigateTo("/movie/0");
+    }
+
+    private async Task HandleRefresh()
+    {
+        movies = await http.GetFromJsonAsync<IEnumerable<Movie>>("api/movies");
+    }
+
+    private void SelectMovie(Movie movie)
+    {
+        navigation.NavigateTo($"/movie/{movie.Id}");
+    }
+
+    private void DeleteMovie(Movie movie)
+    {
+        movieToDelete = movie;
+        showModal = true;
+        modalMessage = $"Would you like to delete {movieToDelete.Title}";
+    }
+
+    private void CloseModal()
+    {
+        movieToDelete = null;
+        showModal = false;
+    }
+
+    private async Task DeleteFromModal()
+    {
+        await http.DeleteAsync($"api/movies/{movieToDelete.Id}");
+        await HandleRefresh();
+        movieToDelete = null;
+        showModal = false;
+    }
+}

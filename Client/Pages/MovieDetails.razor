@@ -1,8 +1,8 @@
-﻿@page "/product/{productId:int}"
+﻿@page "/movie/{movieId:int}"
 @inject HttpClient http
 @inject NavigationManager navigation
 
-@if (product == null)
+@if (movie == null)
 {
     <p>Loading...</p>
 }
@@ -11,25 +11,25 @@ else
     <div class="card edit-detail">
         <header class="card-header">
             <p class="card-header-title">
-                @product.Name
+                @movie.Title
             </p>
         </header>
         <div class="card-content">
             <div class="content">
-                @if (product.Id != 0)
+                @if (movie.Id != 0)
                 {
                     <label class="label" for="id">id</label>
                     <input name="id"
                            class="input"
-                           value="@product.Id"
+                           value="@movie.Id"
                            readonly="readonly" />
                 }
-                <InputDetail Name="name"
-                             Placeholder="Oranges"
-                             @bind-Value="product.Name" />
+                <InputDetail Name="Title"
+                             Placeholder="Enter a movie title"
+                             @bind-Value="movie.Title" />
                 <InputDetail Name="description"
                              Placeholder="box"
-                             @bind-Value="product.Description" />
+                             @bind-Value="movie.Description" />
                 <div class="field">
                     <label class="label" for="quantity">
                         quantity
@@ -39,16 +39,16 @@ else
                            type="number"
                            min="1"
                            max="100"
-                           value="@product.Quantity"
+                           value="@movie.Quantity"
                            placeholder="1"
-                           @onchange="@(e => product.Quantity = int.Parse(e.Value.ToString()))" />
+                           @onchange="@(e => movie.Quantity = int.Parse(e.Value.ToString()))" />
                 </div>
             </div>
         </div>
         <footer class="card-footer ">
             <ButtonFooter Class="cancel-button"
                           IconClasses="fas fa-undo"
-                          OnClick="@CancelProduct"
+                          OnClick="@Cancelmovie"
                           Label="Cancel" />
             <ButtonFooter Class="save-button"
                           IconClasses="fas fa-save"
@@ -59,37 +59,37 @@ else
 }
 
 @code {
-    private Product product;
+    private Movie movie;
 
-    [Parameter] public int ProductId { get; set; }
+    [Parameter] public int movieId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (ProductId == 0)
+        if (movieId == 0)
         {
-            product = new Product();
+            movie = new Movie();
         }
         else
         {
-            var products = await http.GetFromJsonAsync<IEnumerable<Product>>("api/products");
-            product = products.First(p => p.Id == ProductId);
+            var movies = await http.GetFromJsonAsync<IEnumerable<Movie>>("api/movies");
+            movie = movies.First(p => p.Id == movieId);
         }
     }
 
-    private void CancelProduct()
+    private void Cancelmovie()
     {
         navigation.NavigateTo("/");
     }
 
     private async Task Save()
     {
-        if (product.Id == 0)
+        if (movie.Id == 0)
         {
-            await http.PostAsJsonAsync("api/products", product);
+            await http.PostAsJsonAsync("api/movies", movie);
         }
         else
         {
-            await http.PutAsJsonAsync("api/products", product);
+            await http.PutAsJsonAsync("api/movies", movie);
         }
         navigation.NavigateTo("/");
     }
